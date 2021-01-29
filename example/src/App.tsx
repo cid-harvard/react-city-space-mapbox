@@ -33,7 +33,7 @@ CITIES_UMAPJSON_RAW.forEach(({x, y}) => {
 const minMaxLat = extent(allLatCoords) as [number, number];
 const yToLatScale = scaleLinear()
   .domain(extent(uMapYCoords) as [number, number])
-  .range([minMaxLat[0] * 1, minMaxLat[1] * 1.2]);
+  .range([minMaxLat[0] * 1.65, minMaxLat[1] * 1.2]);
 
 const minMaxLng = extent(allLngCoords) as [number, number];
 const xToLngScale = scaleLinear()

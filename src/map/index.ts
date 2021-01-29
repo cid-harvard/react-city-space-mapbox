@@ -1,4 +1,6 @@
 import mapboxgl from 'mapbox-gl';
+import bbox from '@turf/bbox';
+import animatePoints from './animatePoints';
 
 interface Input {
   container: HTMLElement;
@@ -15,8 +17,6 @@ export interface Output {
 
 const cityNodesSourceId = 'city-nodes-source-id';
 const overlaySourceId = 'city-overlay-source-id';
-
-const bounds: [[number, number], [number, number]] = [[-180, -80], [180, 80]];
 
 const overlayPath = [
   [
@@ -35,20 +35,27 @@ const overlayCircle: mapboxgl.GeoJSONSourceOptions['data'] =
 const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Output => {
   mapboxgl.accessToken = accessToken;
 
+  const geoBbox: any = bbox(cityGeoJson);
+  const geoUMapBbox: any = bbox(cityUMapJson);
+
   const map = new mapboxgl.Map({
     container,
     style: 'mapbox://styles/harvardgrowthlab/ckelvcgh70cg019qgiu39035a', // stylesheet location
     center: [0, 80], // starting position [lng, lat]
     zoom: 1.45, // starting zoom
     maxZoom: 15.5,
-    renderWorldCopies: false,
-    maxBounds: bounds,
+    bounds: geoBbox,
   });
 
   let mapLoaded = false;
 
   map.on('load', () => {
     mapLoaded = true;
+
+    map.fitBounds(geoBbox, {
+      padding: 50,
+      animate: true,
+    });
 
     map.addSource(overlaySourceId, {
       type: 'geojson',
@@ -168,11 +175,20 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
     });
   });
 
-  console.log({cityGeoJson, cityUMapJson});
-
   const setToGeoMap = () => {
     if (mapLoaded) {
-      (map.getSource(cityNodesSourceId) as any).setData(cityGeoJson)
+      map.fitBounds(geoBbox, {
+        padding: {top: 100, bottom:0, left: 50, right: 50},
+        animate: true,
+        duration: 300,
+      });
+      animatePoints({
+        start: cityUMapJson,
+        end: cityGeoJson,
+        sourceId: cityNodesSourceId,
+        map,
+      });
+      // (map.getSource(cityNodesSourceId) as any).setData(cityGeoJson)
       const overlaySource = map.getSource(overlaySourceId);
       if (overlaySource) {
         (overlaySource as any).setData(hiddenCircle);
@@ -182,7 +198,18 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
 
   const setToUMap = () => {
     if (mapLoaded) {
-      (map.getSource(cityNodesSourceId) as any).setData(cityUMapJson)
+      map.fitBounds(geoUMapBbox, {
+        padding: {top: 100, bottom:0, left: 50, right: 50},
+        animate: true,
+        duration: 300,
+      });
+      animatePoints({
+        start: cityGeoJson,
+        end: cityUMapJson,
+        sourceId: cityNodesSourceId,
+        map,
+      })
+      // (map.getSource(cityNodesSourceId) as any).setData(cityUMapJson)
       const overlaySource = map.getSource(overlaySourceId);
       if (overlaySource) {
         (overlaySource as any).setData(overlayCircle);

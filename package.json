@@ -25,6 +25,7 @@
   },
   "peerDependencies": {
     "react": "^16.0.0",
+    "@turf/turf": "^6.3.0",
     "mapbox-gl": "^1.00.0"
   },
   "devDependencies": {
