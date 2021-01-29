@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import bbox from '@turf/bbox';
 import animatePoints from './animatePoints';
+import initInteractions from './interactions';
 
 interface Input {
   container: HTMLElement;
@@ -173,6 +174,7 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
           ]
       },
     });
+    initInteractions({map, sourceId: cityNodesSourceId});
   });
 
   const setToGeoMap = () => {
