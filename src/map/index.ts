@@ -12,6 +12,7 @@ interface Input {
   cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'];
   cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'];
   initialMode: MapMode;
+  getPopupHTMLContent: undefined | ((datum: {id: string, country: string, city: string}) => string);
 }
 
 export interface Output {
@@ -42,7 +43,10 @@ const overlayCircle: mapboxgl.GeoJSONSourceOptions['data'] =
   {type: 'Feature', geometry: {type: 'Polygon', coordinates: overlayPath}, properties: {opacity: 1}};
 
 const initMap = (input: Input): Output => {
-  const {container, accessToken, cityGeoJson, cityUMapJson, initialMode, mapStyle} = input;
+  const {
+    container, accessToken, cityGeoJson, cityUMapJson, initialMode, mapStyle,
+    getPopupHTMLContent,
+  } = input;
   mapboxgl.accessToken = accessToken;
 
   const geoBbox: any = bbox(cityGeoJson);
@@ -132,7 +136,7 @@ const initMap = (input: Input): Output => {
       }
     });
 
-    initInteractions({map, sourceId: cityNodesSourceId});
+    initInteractions({map, sourceId: cityNodesSourceId, getPopupHTMLContent});
   });
 
   let mode: MapMode = initialMode;

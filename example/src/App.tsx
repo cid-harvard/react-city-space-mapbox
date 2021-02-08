@@ -16,6 +16,15 @@ const accessToken =
 const App = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const {data} = useLayoutData();
+
+  const renderTooltipContent = (node: {id: string, country: string, city: string}) => {
+    return `
+      <div>
+        <strong>${node.city}</strong>
+      </div>
+      <small>${node.country}</small>
+    `;
+  }
   return (
     <React.Fragment>
       <CitySpaceMap
@@ -24,6 +33,7 @@ const App = () => {
         rootRef={rootRef}
         cityGeoJson={data ? data.cityGeoJson : undefined}
         cityUMapJson={data ? data.cityUMapJson : undefined}
+        getPopupHTMLContent={renderTooltipContent}
       >
         <OptionsBar />
       </CitySpaceMap>

@@ -19,10 +19,14 @@ interface Props {
   cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'] | undefined;
   cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'] | undefined;
   initialMode?: MapMode;
+  getPopupHTMLContent?: undefined | ((datum: {id: string, country: string, city: string}) => string);
 }
 
 const CitySpaceMap = (props: Props) => {
-  const {accessToken, rootRef, children, cityGeoJson, cityUMapJson, initialMode, mapStyle} = props;
+  const {
+    accessToken, rootRef, children, cityGeoJson, cityUMapJson, initialMode, mapStyle,
+    getPopupHTMLContent,
+  } = props;
   const [mapState, setMapState] = useState<MapState>({intialized: false});
 
   useEffect(() => {
@@ -31,11 +35,11 @@ const CitySpaceMap = (props: Props) => {
       const mapOutput = initMap({
         container, accessToken, cityGeoJson, cityUMapJson,
         initialMode: initialMode ? initialMode : MapMode.GEO,
-        mapStyle,
+        mapStyle, getPopupHTMLContent
       });
       setMapState({intialized: true, ...mapOutput});
     }
-  }, [rootRef, mapState, cityGeoJson, cityUMapJson, initialMode, mapStyle]);
+  }, [rootRef, mapState, cityGeoJson, cityUMapJson, initialMode, mapStyle, getPopupHTMLContent]);
 
   return (
     <MapContext.Provider value={mapState}>
