@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import styled from 'styled-components/macro';
-import {useMapContext} from 'react-city-space-mapbox'
+import {useMapContext} from 'react-city-space-mapbox';
+import BOSTON_PROXIMITY_RAW from '../data/boston-proximity-data.json';
+import {createProximityScale, colorByCountryColorMap} from '../Utils';
+import useLayoutData from '../useLayoutData';
 
 const Root = styled.div`
   position: absolute;
@@ -35,8 +38,21 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
+const colorScale = createProximityScale([0, ...BOSTON_PROXIMITY_RAW.map(d => d.proximity), 1]);
+const proximityColorMap = BOSTON_PROXIMITY_RAW.map(({partnerId, proximity}) => ({id: partnerId, color: colorScale(proximity)}));
+
 const OptionsBar = () => {
   const mapContext = useMapContext();
+  const {data} = useLayoutData();
+
+  useEffect(() => {
+    if (mapContext.intialized && data) {
+      const currentCityFeature = data.cityGeoJson.features.find(({properties}: {properties: {id: number}}) => properties.id === 1022);
+      if (currentCityFeature) {
+        mapContext.setNewCenter(currentCityFeature.geometry.coordinates);
+      }
+    }
+  })
 
   const onGeoMapClick = () => {
     if (mapContext.intialized) {
@@ -50,10 +66,31 @@ const OptionsBar = () => {
     }
   }
 
+  const onColorByCountryClick = () => {
+    if (mapContext.intialized && data) {
+      const countryColorMap = data.cityGeoJson.features.map((d: any) => {
+        const country = colorByCountryColorMap.find(c => c.id === d.properties.country);
+        return {
+          id: d.properties.id,
+          color: country ? country.color : 'gray',
+        }
+      })
+      mapContext.setColors(countryColorMap);
+    }
+  }
+
+  const onColorByCountryProximity = () => {
+    if (mapContext.intialized) {
+      mapContext.setColors(proximityColorMap);
+    }
+  }
+
   return (
     <Root>
       <Button onClick={onGeoMapClick}>GeoMap</Button>
       <Button onClick={onUMapClick}>UMap</Button>
+      <Button onClick={onColorByCountryClick}>Color By Country</Button>
+      <Button onClick={onColorByCountryProximity}>Color By Proximity</Button>
     </Root>
   );
 }

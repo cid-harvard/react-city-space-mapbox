@@ -1,11 +1,12 @@
 import 'mapbox-gl/dist/mapbox-gl.css';
 import React, {useEffect, useState, createContext, useContext} from 'react';
 import initMap, {Output} from './map';
+import {MapMode} from './map/Utils';
 
 type MapState = { intialized: false } | ( {intialized: true} & Output);
 const MapContext = createContext<MapState>({intialized: false});
 
-export const useMapContext = () => {
+const useMapContext = () => {
   const mapContext = useContext(MapContext);
   return mapContext;
 };
@@ -14,27 +15,36 @@ interface Props {
   accessToken: string;
   rootRef: React.MutableRefObject<HTMLDivElement | null>;
   children: React.ReactNode;
-  cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'];
-  cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'];
+  cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'] | undefined;
+  cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'] | undefined;
+  initialMode?: MapMode;
 }
 
 const CitySpaceMap = (props: Props) => {
-  const {accessToken, rootRef, children, cityGeoJson, cityUMapJson} = props;
+  const {accessToken, rootRef, children, cityGeoJson, cityUMapJson, initialMode} = props;
   const [mapState, setMapState] = useState<MapState>({intialized: false});
 
   useEffect(() => {
     const container = rootRef.current;
-    if (container && !mapState.intialized) {
-      const mapOutput = initMap({container, accessToken, cityGeoJson, cityUMapJson});
+    if (container && !mapState.intialized && cityGeoJson && cityUMapJson) {
+      const mapOutput = initMap({
+        container, accessToken, cityGeoJson, cityUMapJson,
+        initialMode: initialMode ? initialMode : MapMode.GEO,
+      });
       setMapState({intialized: true, ...mapOutput});
     }
-  }, [rootRef, mapState]);
+  }, [rootRef, mapState, cityGeoJson, cityUMapJson, initialMode]);
 
   return (
     <MapContext.Provider value={mapState}>
       {children}
     </MapContext.Provider>
   );
+};
+
+export {
+  MapMode,
+  useMapContext,
 };
 
 export default CitySpaceMap;

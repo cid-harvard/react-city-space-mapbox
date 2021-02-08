@@ -2,18 +2,23 @@ import mapboxgl from 'mapbox-gl';
 import bbox from '@turf/bbox';
 import animatePoints from './animatePoints';
 import initInteractions from './interactions';
+import changeColors from './changeColors';
+import {MapMode} from './Utils';
 
 interface Input {
   container: HTMLElement;
   accessToken: string;
   cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'];
   cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'];
+  initialMode: MapMode;
 }
 
 export interface Output {
   map: mapboxgl.Map;
   setToGeoMap: () => void;
   setToUMap: () => void;
+  setColors: (colorMap: {id: string, color: string}[]) => void;
+  setNewCenter: (center: [number, number]) => void;
 }
 
 const cityNodesSourceId = 'city-nodes-source-id';
@@ -33,7 +38,7 @@ const hiddenCircle: mapboxgl.GeoJSONSourceOptions['data'] =
 const overlayCircle: mapboxgl.GeoJSONSourceOptions['data'] =
   {type: 'Feature', geometry: {type: 'Polygon', coordinates: overlayPath}, properties: {opacity: 1}};
 
-const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Output => {
+const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode}: Input): Output => {
   mapboxgl.accessToken = accessToken;
 
   const geoBbox: any = bbox(cityGeoJson);
@@ -49,18 +54,20 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
   });
 
   let mapLoaded = false;
+  let centerOverride = false;
 
   map.on('load', () => {
     mapLoaded = true;
-
-    map.fitBounds(geoBbox, {
-      padding: 50,
-      animate: true,
-    });
+    if (!centerOverride) {
+      map.fitBounds(geoBbox, {
+        padding: 50,
+        animate: true,
+      });
+    }
 
     map.addSource(overlaySourceId, {
       type: 'geojson',
-      data: hiddenCircle,
+      data: initialMode === MapMode.GEO ? hiddenCircle : overlayCircle,
     });
 
     map.addLayer({
@@ -75,7 +82,7 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
 
     map.addSource(cityNodesSourceId, {
       type: 'geojson',
-      data: cityGeoJson,
+      data: initialMode === MapMode.GEO ? cityGeoJson : cityUMapJson,
     });
 
     map.addLayer({
@@ -91,136 +98,85 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson}: Input): Ou
           0, 2,
           22, 20,
         ],
-        'circle-color': [
-          'match',
-          ['get', 'country'],
-            "United States",
-            "#696969",
-            "Canada",
-            "#1E90FF",
-            "Peru",
-            "#B22222",
-            "Brazil",
-            "#D2691E",
-            "Chile",
-            "#228B22",
-            "Argentina",
-            "#FF00FF",
-            "Spain",
-            "#DCDCDC",
-            "Morocco",
-            "#32CD32",
-            "Portugal",
-            "#FFD700",
-            "United Kingdom",
-            "#DAA520",
-            "France",
-            "#808080",
-            "Belgium",
-            "#808080",
-            "Germany",
-            "#008000",
-            "Italy",
-            "#ADFF2F",
-            "Norway",
-            "#F0FFF0",
-            "Sweden",
-            "#FF69B4",
-            "Denmark",
-            "#CD5C5C",
-            "Czech Republic",
-            "#4B0082",
-            "Slovenia",
-            "#FFFFF0",
-            "Poland",
-            "#F0E68C",
-            "Austria",
-            "#E6E6FA",
-            "Croatia",
-            "#FFF0F5",
-            "Russia",
-            "#7CFC00",
-            "Hungary",
-            "#FFFACD",
-            "Finland",
-            "#ADD8E6",
-            "Estonia",
-            "#F08080",
-            "Latvia",
-            "#E0FFFF",
-            "Lithuania",
-            "#FAFAD2",
-            "Greece",
-            "#D3D3D3",
-            "Romania",
-            "#D3D3D3",
-            "Israel",
-            "#90EE90",
-            "India",
-            "#FFB6C1",
-            "China",
-            "#FFA07A",
-            "Thailand",
-            "#20B2AA",
-            "Singapore",
-            "#87CEFA",
-            "Taiwan",
-            "#778899",
-            "Japan",
-            "#778899",
-            "Philippines",
-            "#B0C4DE",
-          /* other */ '#333'
-          ]
+        'circle-color': ['get', 'fill'],
       },
     });
     initInteractions({map, sourceId: cityNodesSourceId});
   });
 
+  let mode: MapMode = initialMode;
+
   const setToGeoMap = () => {
     if (mapLoaded) {
+      map.setRenderWorldCopies(true);
+      const duration = 200;
       map.fitBounds(geoBbox, {
         padding: {top: 100, bottom:0, left: 50, right: 50},
         animate: true,
-        duration: 300,
+        duration,
       });
-      animatePoints({
-        start: cityUMapJson,
-        end: cityGeoJson,
-        sourceId: cityNodesSourceId,
-        map,
-      });
-      // (map.getSource(cityNodesSourceId) as any).setData(cityGeoJson)
+      setTimeout(() => {
+        animatePoints({
+          start: cityUMapJson,
+          end: cityGeoJson,
+          sourceId: cityNodesSourceId,
+          map,
+        });
+      }, duration)
       const overlaySource = map.getSource(overlaySourceId);
       if (overlaySource) {
         (overlaySource as any).setData(hiddenCircle);
       }
+      mode = MapMode.GEO;
     }
   };
 
   const setToUMap = () => {
     if (mapLoaded) {
+      map.setRenderWorldCopies(false);
+      const duration = 200;
       map.fitBounds(geoUMapBbox, {
         padding: {top: 100, bottom:0, left: 50, right: 50},
         animate: true,
-        duration: 300,
+        duration,
       });
-      animatePoints({
-        start: cityGeoJson,
-        end: cityUMapJson,
-        sourceId: cityNodesSourceId,
-        map,
-      })
-      // (map.getSource(cityNodesSourceId) as any).setData(cityUMapJson)
+      setTimeout(() => {
+        animatePoints({
+          start: cityGeoJson,
+          end: cityUMapJson,
+          sourceId: cityNodesSourceId,
+          map,
+        })
+      }, duration)
       const overlaySource = map.getSource(overlaySourceId);
       if (overlaySource) {
         (overlaySource as any).setData(overlayCircle);
       }
+      mode = MapMode.UMAP;
+    }
+  };
+
+  const setColors = (colorMap: {id: string, color: string}[]) => {
+    changeColors({
+      sourceId: cityNodesSourceId,
+      map, colorMap, mode,
+      cityGeoJson,
+      cityUMapJson,
+    });
+  }
+
+  const setNewCenter = (center: [number, number]) => {
+    if (mode === MapMode.GEO) {
+      centerOverride = true;
+      map.jumpTo({
+        center,
+        zoom: 3,
+      });
     }
   };
 
   return {
-    map, setToGeoMap, setToUMap,
+    map, setToGeoMap, setToUMap, setColors, setNewCenter,
   };
 };
 

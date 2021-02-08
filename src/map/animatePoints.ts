@@ -82,6 +82,11 @@ const animatePoints = (input: Input) => {
     // Request the next frame of animation as long as the end has not been reached
     if (counter < steps) {
       requestAnimationFrame(animate);
+    } else {
+      const source = map.getSource(sourceId);
+      if (source) {
+        (source as any).setData(end);
+      }
     }
     ease = counter < steps / 2 ? ease * 1.09 : ease * 0.92;
     counter = counter + ease;

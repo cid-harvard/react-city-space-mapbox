@@ -1,0 +1,57 @@
+[
+  {
+    "cityId": "1022",
+    "partnerId": "1022",
+    "proximity": 1
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "898",
+    "proximity": 0.8457759655638895
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "501",
+    "proximity": 0.7749668796605002
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "634",
+    "proximity": 0.7710320044285274
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "554",
+    "proximity": 0.7679401945133717
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "101",
+    "proximity": 0.7398890784391562
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "272",
+    "proximity": 0.7368686766814356
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "323",
+    "proximity": 0.7355391950081346
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "945",
+    "proximity": 0.7172513104549719
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "140",
+    "proximity": 0.7144156559512236
+  },
+  {
+    "cityId": "1022",
+    "partnerId": "79",
+    "proximity": 0.7011886158467436
+  }
+]
