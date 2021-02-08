@@ -13,6 +13,7 @@ const useMapContext = () => {
 
 interface Props {
   accessToken: string;
+  mapStyle: string;
   rootRef: React.MutableRefObject<HTMLDivElement | null>;
   children: React.ReactNode;
   cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'] | undefined;
@@ -21,7 +22,7 @@ interface Props {
 }
 
 const CitySpaceMap = (props: Props) => {
-  const {accessToken, rootRef, children, cityGeoJson, cityUMapJson, initialMode} = props;
+  const {accessToken, rootRef, children, cityGeoJson, cityUMapJson, initialMode, mapStyle} = props;
   const [mapState, setMapState] = useState<MapState>({intialized: false});
 
   useEffect(() => {
@@ -30,10 +31,11 @@ const CitySpaceMap = (props: Props) => {
       const mapOutput = initMap({
         container, accessToken, cityGeoJson, cityUMapJson,
         initialMode: initialMode ? initialMode : MapMode.GEO,
+        mapStyle,
       });
       setMapState({intialized: true, ...mapOutput});
     }
-  }, [rootRef, mapState, cityGeoJson, cityUMapJson, initialMode]);
+  }, [rootRef, mapState, cityGeoJson, cityUMapJson, initialMode, mapStyle]);
 
   return (
     <MapContext.Provider value={mapState}>

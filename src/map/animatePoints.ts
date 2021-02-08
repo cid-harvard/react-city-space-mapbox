@@ -7,6 +7,8 @@ interface Input {
   start: mapboxgl.GeoJSONSourceOptions['data'];
   end: mapboxgl.GeoJSONSourceOptions['data'];
   sourceId: string;
+  highlightedSourceId: string;
+  highlightedId: string | number | null;
   map: mapboxgl.Map;
 }
 
@@ -39,7 +41,7 @@ interface LineStringFeature {
 const steps = 120;
 
 const animatePoints = (input: Input) => {
-  const {map, sourceId} = input;
+  const {map, sourceId, highlightedId, highlightedSourceId} = input;
   const start = input.start as any;
   const end = input.end as any;
 
@@ -67,16 +69,34 @@ const animatePoints = (input: Input) => {
   let ease = 1;
   function animate() {
     const index = counter >= steps ? steps - 1 : Math.floor(counter);
+    let highlighted: any | undefined;
     const points = routes.features.map((feature: LineStringFeature) => {
-      return point(
+      const newPoint = point(
         feature.geometry.coordinates[index],
         {...feature.properties}
       )
+      if (highlightedId !== null && feature.properties.id.toString() === highlightedId.toString()) {
+        highlighted = {
+          ...newPoint,
+          properties: {
+            ...newPoint.properties,
+            icon: 'arrow_down',
+          }
+        };
+      }
+      return newPoint;
     });
 
     const source = map.getSource(sourceId);
     if (source) {
       (source as any).setData(featureCollection(points));
+    }
+
+    if (highlighted) {
+      const highlightedSource = map.getSource(highlightedSourceId);
+      if (highlightedSource) {
+        (highlightedSource as any).setData(highlighted);
+      }
     }
    
     // Request the next frame of animation as long as the end has not been reached
@@ -86,6 +106,22 @@ const animatePoints = (input: Input) => {
       const source = map.getSource(sourceId);
       if (source) {
         (source as any).setData(end);
+      }
+      if (highlighted) {
+        const endNode = end.features.find((f: any) => highlightedId !== null && f.properties.id.toString() === highlightedId.toString());
+        if (endNode) {
+          highlighted = {
+            ...endNode,
+            properties: {
+              ...endNode.properties,
+              icon: 'arrow_down',
+            }
+          };
+          const highlightedSource = map.getSource(highlightedSourceId);
+          if (highlightedSource) {
+            (highlightedSource as any).setData(highlighted);
+          }
+        }
       }
     }
     ease = counter < steps / 2 ? ease * 1.09 : ease * 0.92;

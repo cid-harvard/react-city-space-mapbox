@@ -50,6 +50,7 @@ const OptionsBar = () => {
       const currentCityFeature = data.cityGeoJson.features.find(({properties}: {properties: {id: number}}) => properties.id === 1022);
       if (currentCityFeature) {
         mapContext.setNewCenter(currentCityFeature.geometry.coordinates);
+        mapContext.setHighlighted(1022);
       }
     }
   })

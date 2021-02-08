@@ -20,6 +20,7 @@ const App = () => {
     <React.Fragment>
       <CitySpaceMap
         accessToken={accessToken}
+        mapStyle={'mapbox://styles/harvardgrowthlab/ckelvcgh70cg019qgiu39035a'}
         rootRef={rootRef}
         cityGeoJson={data ? data.cityGeoJson : undefined}
         cityUMapJson={data ? data.cityUMapJson : undefined}

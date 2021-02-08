@@ -3,10 +3,11 @@ import bbox from '@turf/bbox';
 import animatePoints from './animatePoints';
 import initInteractions from './interactions';
 import changeColors from './changeColors';
-import {MapMode} from './Utils';
+import {MapMode, defaultGeoJsonPoint} from './Utils';
 
 interface Input {
   container: HTMLElement;
+  mapStyle: string;
   accessToken: string;
   cityGeoJson: mapboxgl.GeoJSONSourceOptions['data'];
   cityUMapJson: mapboxgl.GeoJSONSourceOptions['data'];
@@ -19,9 +20,11 @@ export interface Output {
   setToUMap: () => void;
   setColors: (colorMap: {id: string, color: string}[]) => void;
   setNewCenter: (center: [number, number]) => void;
+  setHighlighted: (id: number | string | null) => void;
 }
 
 const cityNodesSourceId = 'city-nodes-source-id';
+const highlightedNodeSourceId = 'highlighted-city-node-source-id';
 const overlaySourceId = 'city-overlay-source-id';
 
 const overlayPath = [
@@ -38,7 +41,8 @@ const hiddenCircle: mapboxgl.GeoJSONSourceOptions['data'] =
 const overlayCircle: mapboxgl.GeoJSONSourceOptions['data'] =
   {type: 'Feature', geometry: {type: 'Polygon', coordinates: overlayPath}, properties: {opacity: 1}};
 
-const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode}: Input): Output => {
+const initMap = (input: Input): Output => {
+  const {container, accessToken, cityGeoJson, cityUMapJson, initialMode, mapStyle} = input;
   mapboxgl.accessToken = accessToken;
 
   const geoBbox: any = bbox(cityGeoJson);
@@ -46,7 +50,7 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode
 
   const map = new mapboxgl.Map({
     container,
-    style: 'mapbox://styles/harvardgrowthlab/ckelvcgh70cg019qgiu39035a', // stylesheet location
+    style: mapStyle, // stylesheet location
     center: [0, 80], // starting position [lng, lat]
     zoom: 1.45, // starting zoom
     maxZoom: 15.5,
@@ -101,10 +105,38 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode
         'circle-color': ['get', 'fill'],
       },
     });
+
+    map.addSource(highlightedNodeSourceId, {
+      type: 'geojson',
+      data: defaultGeoJsonPoint,
+    });
+
+    map.addLayer({
+      id: highlightedNodeSourceId,
+      type: 'symbol',
+      source: highlightedNodeSourceId,
+        layout: {
+          'icon-image': ['get', 'icon'],
+          'icon-size': [
+              'interpolate',
+              ['exponential', 0.96],
+              ['zoom'],
+              0,
+              0.5,
+              22,
+              2,
+          ],
+          'icon-offset': [0, -15],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+      }
+    });
+
     initInteractions({map, sourceId: cityNodesSourceId});
   });
 
   let mode: MapMode = initialMode;
+  let highlightedId: string | number | null = null;
 
   const setToGeoMap = () => {
     if (mapLoaded) {
@@ -120,7 +152,8 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode
           start: cityUMapJson,
           end: cityGeoJson,
           sourceId: cityNodesSourceId,
-          map,
+          map, highlightedId,
+          highlightedSourceId: highlightedNodeSourceId,
         });
       }, duration)
       const overlaySource = map.getSource(overlaySourceId);
@@ -145,7 +178,8 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode
           start: cityGeoJson,
           end: cityUMapJson,
           sourceId: cityNodesSourceId,
-          map,
+          map, highlightedId,
+          highlightedSourceId: highlightedNodeSourceId,
         })
       }, duration)
       const overlaySource = map.getSource(overlaySourceId);
@@ -175,8 +209,41 @@ const initMap = ({container, accessToken, cityGeoJson, cityUMapJson, initialMode
     }
   };
 
+  const setHighlighted = (id: number | string | null) => {
+    const updateHighlightedPointSource = () => {
+      const source = map.getSource(highlightedNodeSourceId);
+      if (id !== null && source) {
+        highlightedId = id;
+        const data: any = mode === MapMode.UMAP ? cityUMapJson : cityGeoJson;
+        const targetPoint = data.features.find((d: any) => d.properties.id.toString() === id.toString());
+        if (targetPoint) {
+          const properties = {
+            ...targetPoint.properties,
+            icon: 'arrow_down',
+          };
+          (source as any).setData({
+            ...targetPoint,
+            properties,
+          });
+        }
+      } else if (source) {
+        (source as any).setData(defaultGeoJsonPoint);
+      }
+    }
+
+    if (mapLoaded) {
+      updateHighlightedPointSource();
+    } else {
+      const updateHighlightedPointSourceOnLoad = () => {
+        updateHighlightedPointSource();
+        map.off('load', updateHighlightedPointSourceOnLoad);
+      };
+      map.on('load', updateHighlightedPointSourceOnLoad);
+    }
+  };
+
   return {
-    map, setToGeoMap, setToUMap, setColors, setNewCenter,
+    map, setToGeoMap, setToUMap, setColors, setNewCenter, setHighlighted,
   };
 };
 
