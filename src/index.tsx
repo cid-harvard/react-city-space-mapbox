@@ -51,6 +51,7 @@ const CitySpaceMap = (props: Props) => {
 export {
   MapMode,
   useMapContext,
+  MapState,
 };
 
 export default CitySpaceMap;
