@@ -49,7 +49,7 @@ const animatePoints = (input: Input) => {
     ...start.features,
     features: start.features.map((startFeature: PointFeature) => {
       const endFeature: PointFeature =
-        end.features.find((f: PointFeature) => f.properties.id === startFeature.properties.id);
+        end.features.find((f: PointFeature) => f.properties.id.toString() === startFeature.properties.id.toString());
       const route = lineString(
         [startFeature.geometry.coordinates, endFeature.geometry.coordinates],
         {...startFeature.properties},
