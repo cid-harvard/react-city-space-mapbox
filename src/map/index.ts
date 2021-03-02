@@ -3,6 +3,7 @@ import bbox from '@turf/bbox';
 import animatePoints from './animatePoints';
 import initInteractions from './interactions';
 import changeColors from './changeColors';
+import changeNodeSizing from './changeNodeSizing';
 import {MapMode, defaultGeoJsonPoint} from './Utils';
 
 interface Input {
@@ -20,6 +21,7 @@ export interface Output {
   setToGeoMap: () => void;
   setToUMap: () => void;
   setColors: (colorMap: {id: string, color: string}[]) => void;
+  setNodeSizing: (radiusMap: {id: string, radius: number}[]) => void;
   setNewCenter: (center: [number, number]) => void;
   setHighlighted: (id: number | string | null) => void;
 }
@@ -99,12 +101,17 @@ const initMap = (input: Input): Output => {
       source: cityNodesSourceId,
       paint: {
         // make circles larger as the user zooms from z12 to z22
+        // 'circle-radius': [
+        //   'interpolate',
+        //   ['linear', 1.96],
+        //   ['zoom'],
+        //   0, 2,
+        //   22, 20,
+        // ],
         'circle-radius': [
-          'interpolate',
-          ['linear', 1.96],
-          ['zoom'],
-          0, 2,
-          22, 20,
+          'interpolate', ['linear'], ['zoom'],
+          0, ['/', ['get', 'radius'], 12],
+          22, ['/', ['get', 'radius'], 1.25],
         ],
         'circle-color': ['get', 'fill'],
       },
@@ -203,6 +210,15 @@ const initMap = (input: Input): Output => {
     });
   }
 
+  const setNodeSizing = (radiusMap: {id: string, radius: number}[]) => {
+    changeNodeSizing({
+      sourceId: cityNodesSourceId,
+      map, radiusMap, mode,
+      cityGeoJson,
+      cityUMapJson,
+    });
+  }
+
   const setNewCenter = (center: [number, number]) => {
     if (mode === MapMode.GEO) {
       centerOverride = true;
@@ -247,7 +263,7 @@ const initMap = (input: Input): Output => {
   };
 
   return {
-    map, setToGeoMap, setToUMap, setColors, setNewCenter, setHighlighted,
+    map, setToGeoMap, setToUMap, setColors, setNewCenter, setHighlighted, setNodeSizing,
   };
 };
 

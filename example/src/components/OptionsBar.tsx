@@ -3,7 +3,10 @@ import styled from 'styled-components/macro';
 import {useMapContext} from 'react-city-space-mapbox';
 import BOSTON_PROXIMITY_RAW from '../data/boston-proximity-data.json';
 import {createProximityScale, colorByCountryColorMap} from '../Utils';
+import BauruData from '../data/bauru_data.json';
 import useLayoutData from '../useLayoutData';
+import {scaleLinear} from 'd3-scale';
+import {extent} from 'd3-array';
 
 const Root = styled.div`
   position: absolute;
@@ -38,6 +41,28 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
+const {cityGeoJson: cityMetaData} = BauruData;
+const minMaxPopulation = extent(cityMetaData.features.map(f => f.properties.population)) as [number, number];
+const populationScale = scaleLinear()
+    .domain(minMaxPopulation)
+    .range([16, 70]);
+const minMaxGdpPpp = extent(cityMetaData.features.map(f => f.properties.gdpPpp)) as [number, number];
+const gdpPppScale = scaleLinear()
+    .domain(minMaxGdpPpp)
+    .range([16, 70]);
+const populationRadiusMap = cityMetaData.features.map(f => ({
+  id: f.properties.id,
+  radius: populationScale(f.properties.population),
+}))
+const gdpPppRadiusMap = cityMetaData.features.map(f => ({
+  id: f.properties.id,
+  radius: gdpPppScale(f.properties.gdpPpp),
+}))
+const uniformRadiusMap = cityMetaData.features.map(f => ({
+  id: f.properties.id,
+  radius: 20,
+}))
+
 const colorScale = createProximityScale([0, ...BOSTON_PROXIMITY_RAW.map(d => d.proximity), 1]);
 const proximityColorMap = BOSTON_PROXIMITY_RAW.map(({partnerId, proximity}) => ({id: partnerId, color: colorScale(proximity)}));
 
@@ -47,10 +72,10 @@ const OptionsBar = () => {
 
   useEffect(() => {
     if (mapContext.intialized && data) {
-      const currentCityFeature = data.cityGeoJson.features.find(({properties}: {properties: {id: number}}) => properties.id === 1022);
+      const currentCityFeature = data.cityGeoJson.features.find(({properties}: {properties: {id: string}}) => properties.id === '1022');
       if (currentCityFeature) {
-        mapContext.setNewCenter(currentCityFeature.geometry.coordinates);
-        mapContext.setHighlighted(1022);
+        mapContext.setNewCenter(currentCityFeature.geometry.coordinates as any);
+        mapContext.setHighlighted('1022');
       }
     }
   })
@@ -85,6 +110,21 @@ const OptionsBar = () => {
       mapContext.setColors(proximityColorMap);
     }
   }
+  const onSizeByPopulation = () => {
+    if (mapContext.intialized) {
+      mapContext.setNodeSizing(populationRadiusMap);
+    }
+  }
+  const onSizeByGdpPpp = () => {
+    if (mapContext.intialized) {
+      mapContext.setNodeSizing(gdpPppRadiusMap);
+    }
+  }
+  const onSizeByUniform = () => {
+    if (mapContext.intialized) {
+      mapContext.setNodeSizing(uniformRadiusMap);
+    }
+  }
 
   return (
     <Root>
@@ -92,6 +132,9 @@ const OptionsBar = () => {
       <Button onClick={onUMapClick}>UMap</Button>
       <Button onClick={onColorByCountryClick}>Color By Country</Button>
       <Button onClick={onColorByCountryProximity}>Color By Proximity</Button>
+      <Button onClick={onSizeByPopulation}>Size by Pop.</Button>
+      <Button onClick={onSizeByGdpPpp}>Size by GDP PPP</Button>
+      <Button onClick={onSizeByUniform}>Size by Uniform</Button>
     </Root>
   );
 }

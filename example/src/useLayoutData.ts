@@ -19,6 +19,7 @@ interface Output {
 
 const useLayoutData = () => {
   const [output, setOutput] = useState<Output>({loading: true, error: undefined, data: undefined});
+  const radius = 20;
 
   useEffect(() => {
     setTimeout(() => {
@@ -30,7 +31,7 @@ const useLayoutData = () => {
         const {ID_HDC_G0: id, CTR_MN_NM: country, UC_NM_MN: city } = feature.properties;
         const colorNode = colorByCountryColorMap.find(c => c.id === country);
         const fill = colorNode ? colorNode.color : 'gray';
-        const point = centroid(feature, {properties: {id, country, city, fill}})
+        const point = centroid(feature, {properties: {id, country, city, fill, radius}})
         allLngCoords.push(point.geometry.coordinates[0]);
         allLatCoords.push(point.geometry.coordinates[1]);
         return point;
@@ -59,7 +60,7 @@ const useLayoutData = () => {
         const {x, y, ID_HDC_G0: id, CTR_MN_NM: country, UC_NM_MN: city } = n;
         const colorNode = colorByCountryColorMap.find(c => c.id === country);
         const fill = colorNode ? colorNode.color : 'gray';
-        return point([xToLngScale(x), yToLatScale(y)], {id, country, city, fill})
+        return point([xToLngScale(x), yToLatScale(y)], {id, country, city, fill, radius})
       }));
 
       setOutput({loading: false, error: undefined, data: {cityUMapJson, cityGeoJson}});
