@@ -16,11 +16,11 @@ const changeNodeSizing = (input: Input) => {
   const defaultRadius = 20;
   const cityGeoJson = input.cityGeoJson as any;
   const cityUMapJson = input.cityUMapJson as any;
-  cityGeoJson.features.map((d: any) => {
+  cityGeoJson.features.forEach((d: any) => {
     const newRadiusTarget = radiusMap.find(c => c.id.toString() === d.properties.id.toString());
     d.properties = {...d.properties, radius: newRadiusTarget ? newRadiusTarget.radius : defaultRadius};
   })
-  cityUMapJson.features.map((d: any) => {
+  cityUMapJson.features.forEach((d: any) => {
     const newRadiusTarget = radiusMap.find(c => c.id.toString() === d.properties.id.toString());
     d.properties = {...d.properties, radius: newRadiusTarget ? newRadiusTarget.radius : defaultRadius};
   })

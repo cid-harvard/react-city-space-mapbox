@@ -2,7 +2,8 @@ import React, {useRef} from 'react'
 import CitySpaceMap from 'react-city-space-mapbox'
 import styled from 'styled-components/macro';
 import OptionsBar from './components/OptionsBar';
-import useLayoutData from './useLayoutData';
+// import useLayoutData from './useLayoutData';
+import data from './data/boston-with-regions.json';
 
 const Root = styled.div`
   position: fixed;
@@ -15,7 +16,7 @@ const accessToken =
 
 const App = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const {data} = useLayoutData();
+  // const {data} = useLayoutData();
 
   const renderTooltipContent = (node: {id: string, country: string, city: string}) => {
     return `
@@ -31,8 +32,8 @@ const App = () => {
         accessToken={accessToken}
         mapStyle={'mapbox://styles/harvardgrowthlab/ckelvcgh70cg019qgiu39035a'}
         rootRef={rootRef}
-        cityGeoJson={data ? data.cityGeoJson : undefined}
-        cityUMapJson={data ? data.cityUMapJson : undefined}
+        cityGeoJson={data ? data.cityGeoJson : undefined as any}
+        cityUMapJson={data ? data.cityUMapJson : undefined as any}
         getPopupHTMLContent={renderTooltipContent}
       >
         <OptionsBar />

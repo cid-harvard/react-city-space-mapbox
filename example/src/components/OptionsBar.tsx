@@ -125,6 +125,20 @@ const OptionsBar = () => {
       mapContext.setNodeSizing(uniformRadiusMap);
     }
   }
+  const onFilter = () => {
+    if (mapContext.intialized) {
+      const minMaxPopulation: [number, number] = [
+        246157.656242,
+        40589878.1018
+      ];
+      const minMaxGdpPppPc: [number, number] = [
+        629.5480072418245,
+        98409.40985945992
+      ];
+      const selectedRegionIds: string[] = ["19"];
+      mapContext.setFilterParamaters(minMaxPopulation, minMaxGdpPppPc, selectedRegionIds);
+    }
+  }
 
   return (
     <Root>
@@ -135,6 +149,7 @@ const OptionsBar = () => {
       <Button onClick={onSizeByPopulation}>Size by Pop.</Button>
       <Button onClick={onSizeByGdpPpp}>Size by GDP PPP</Button>
       <Button onClick={onSizeByUniform}>Size by Uniform</Button>
+      <Button onClick={onFilter}>Filter test</Button>
     </Root>
   );
 }

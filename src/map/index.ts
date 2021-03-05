@@ -3,6 +3,7 @@ import bbox from '@turf/bbox';
 import animatePoints from './animatePoints';
 import initInteractions from './interactions';
 import changeColors from './changeColors';
+import changeOpacity from './changeOpacity';
 import changeNodeSizing from './changeNodeSizing';
 import {MapMode, defaultGeoJsonPoint} from './Utils';
 
@@ -24,6 +25,7 @@ export interface Output {
   setNodeSizing: (radiusMap: {id: string, radius: number}[]) => void;
   setNewCenter: (center: [number, number]) => void;
   setHighlighted: (id: number | string | null) => void;
+  setFilterParamaters: (minMaxPopulation: [number, number], minMaxGdpPppPc: [number, number], regions: string[]) => void;
 }
 
 const cityNodesSourceId = 'city-nodes-source-id';
@@ -114,6 +116,7 @@ const initMap = (input: Input): Output => {
           22, ['/', ['get', 'radius'], 1.25],
         ],
         'circle-color': ['get', 'fill'],
+        'circle-opacity': ['get', 'opacity'],
       },
     });
 
@@ -262,8 +265,23 @@ const initMap = (input: Input): Output => {
     }
   };
 
+  const setFilterParamaters = ( 
+    minMaxPopulation: [number, number],
+    minMaxGdpPppPc: [number, number],
+    regions: string[]) => {
+      changeOpacity({
+        sourceId: cityNodesSourceId,
+        map, mode,
+        cityGeoJson,
+        cityUMapJson,
+        minMaxPopulation,
+        minMaxGdpPppPc,
+        regions,
+      });
+  }
+
   return {
-    map, setToGeoMap, setToUMap, setColors, setNewCenter, setHighlighted, setNodeSizing,
+    map, setToGeoMap, setToUMap, setColors, setNewCenter, setHighlighted, setNodeSizing, setFilterParamaters,
   };
 };
 
