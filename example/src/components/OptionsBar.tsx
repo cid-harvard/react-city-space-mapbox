@@ -46,17 +46,17 @@ const minMaxPopulation = extent(cityMetaData.features.map(f => f.properties.popu
 const populationScale = scaleLinear()
     .domain(minMaxPopulation)
     .range([16, 70]);
-const minMaxGdpPpp = extent(cityMetaData.features.map(f => f.properties.gdpPpp)) as [number, number];
-const gdpPppScale = scaleLinear()
+const minMaxGdpPpp = extent(cityMetaData.features.map(f => f.properties.gdppc)) as [number, number];
+const gdppcScale = scaleLinear()
     .domain(minMaxGdpPpp)
     .range([16, 70]);
 const populationRadiusMap = cityMetaData.features.map(f => ({
   id: f.properties.id,
   radius: populationScale(f.properties.population),
 }))
-const gdpPppRadiusMap = cityMetaData.features.map(f => ({
+const gdppcRadiusMap = cityMetaData.features.map(f => ({
   id: f.properties.id,
-  radius: gdpPppScale(f.properties.gdpPpp),
+  radius: gdppcScale(f.properties.gdppc),
 }))
 const uniformRadiusMap = cityMetaData.features.map(f => ({
   id: f.properties.id,
@@ -117,7 +117,7 @@ const OptionsBar = () => {
   }
   const onSizeByGdpPpp = () => {
     if (mapContext.intialized) {
-      mapContext.setNodeSizing(gdpPppRadiusMap);
+      mapContext.setNodeSizing(gdppcRadiusMap);
     }
   }
   const onSizeByUniform = () => {
@@ -132,8 +132,8 @@ const OptionsBar = () => {
         40589878.1018
       ];
       const minMaxGdpPppPc: [number, number] = [
-        629.5480072418245,
-        98409.40985945992
+        176058974208,
+        476058974208
       ];
       const selectedRegionIds: string[] = ["19"];
       mapContext.setFilterParamaters(minMaxPopulation, minMaxGdpPppPc, selectedRegionIds);

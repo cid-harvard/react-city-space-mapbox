@@ -20,23 +20,23 @@ const changeOpacity = (input: Input) => {
   const cityGeoJson = input.cityGeoJson as any;
   const cityUMapJson = input.cityUMapJson as any;
   cityGeoJson.features.forEach((d: any) => {
-    if (!isNaN(d.properties.population) && !isNaN(d.properties.gdpPpp)) {
+    if (!isNaN(d.properties.population) && !isNaN(d.properties.gdppc)) {
       const population = d.properties.population;
-      const gdpPppPc = d.properties.gdpPpp / population;
+      const gdppc = d.properties.gdppc;
       const opacity =
         population >= minPop && population <= maxPop &&
-        gdpPppPc >= minGdpPppPc && gdpPppPc <= maxGdpPppPc &&
+        gdppc >= minGdpPppPc && gdppc <= maxGdpPppPc &&
         (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) ? 1 : 0;
       d.properties = {...d.properties, opacity};
     }
   })
   cityUMapJson.features.forEach((d: any) => {
-    if (!isNaN(d.properties.population) && !isNaN(d.properties.gdpPpp)) {
+    if (!isNaN(d.properties.population) && !isNaN(d.properties.gdppc)) {
       const population = d.properties.population;
-      const gdpPppPc = d.properties.gdpPpp / population;
+      const gdppc = d.properties.gdppc;
       const opacity =
         population >= minPop && population <= maxPop &&
-        gdpPppPc >= minGdpPppPc && gdpPppPc <= maxGdpPppPc &&
+        gdppc >= minGdpPppPc && gdppc <= maxGdpPppPc &&
         (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) ? 1 : 0;
       d.properties = {...d.properties, opacity};
     }
