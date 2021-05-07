@@ -28,7 +28,7 @@ const changeOpacity = (input: Input) => {
         population >= minPop && population <= maxPop &&
         gdppc >= minGdpPppPc && gdppc <= maxGdpPppPc &&
         (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) &&
-        (!countries.length || (d.properties.country !== null && countries.includes(d.properties.country.toString())))
+        (!countries.length || (d.properties.countryId !== null && d.properties.countryId !== undefined && countries.includes(d.properties.countryId.toString())))
           ? 1 : 0;
       d.properties = {...d.properties, opacity};
     }
