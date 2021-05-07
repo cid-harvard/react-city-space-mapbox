@@ -25,7 +25,12 @@ export interface Output {
   setNodeSizing: (radiusMap: {id: string, radius: number}[]) => void;
   setNewCenter: (center: [number, number]) => void;
   setHighlighted: (id: number | string | null) => void;
-  setFilterParamaters: (minMaxPopulation: [number, number], minMaxGdpPppPc: [number, number], regions: string[]) => void;
+  setFilterParamaters: (
+    minMaxPopulation: [number, number],
+    minMaxGdpPppPc: [number, number],
+    regions: string[],
+    countries: string[],
+  ) => void;
 }
 
 const cityNodesSourceId = 'city-nodes-source-id';
@@ -268,7 +273,9 @@ const initMap = (input: Input): Output => {
   const setFilterParamaters = ( 
     minMaxPopulation: [number, number],
     minMaxGdpPppPc: [number, number],
-    regions: string[]) => {
+    regions: string[],
+    countries: string[],
+  ) => {
       changeOpacity({
         sourceId: cityNodesSourceId,
         map, mode,
@@ -277,6 +284,7 @@ const initMap = (input: Input): Output => {
         minMaxPopulation,
         minMaxGdpPppPc,
         regions,
+        countries,
       });
   }
 

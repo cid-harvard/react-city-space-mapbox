@@ -11,10 +11,11 @@ interface Input {
   minMaxPopulation: [number, number];
   minMaxGdpPppPc: [number, number];
   regions: string[];
+  countries: string[];
 }
 
 const changeOpacity = (input: Input) => {
-  const {map, sourceId, minMaxPopulation, minMaxGdpPppPc, regions, mode} = input;
+  const {map, sourceId, minMaxPopulation, minMaxGdpPppPc, regions, countries, mode} = input;
   const [minPop, maxPop] = minMaxPopulation;
   const [minGdpPppPc, maxGdpPppPc] = minMaxGdpPppPc;
   const cityGeoJson = input.cityGeoJson as any;
@@ -26,7 +27,9 @@ const changeOpacity = (input: Input) => {
       const opacity =
         population >= minPop && population <= maxPop &&
         gdppc >= minGdpPppPc && gdppc <= maxGdpPppPc &&
-        (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) ? 1 : 0;
+        (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) &&
+        (!countries.length || (d.properties.country !== null && countries.includes(d.properties.country.toString())))
+          ? 1 : 0;
       d.properties = {...d.properties, opacity};
     }
   })
@@ -37,7 +40,9 @@ const changeOpacity = (input: Input) => {
       const opacity =
         population >= minPop && population <= maxPop &&
         gdppc >= minGdpPppPc && gdppc <= maxGdpPppPc &&
-        (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) ? 1 : 0;
+        (!regions.length || (d.properties.region !== null && regions.includes(d.properties.region.toString()))) &&
+        (!countries.length || (d.properties.country !== null && countries.includes(d.properties.country.toString())))
+          ? 1 : 0;
       d.properties = {...d.properties, opacity};
     }
   })

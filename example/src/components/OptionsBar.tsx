@@ -135,8 +135,9 @@ const OptionsBar = () => {
         176058974208,
         476058974208
       ];
-      const selectedRegionIds: string[] = ["19"];
-      mapContext.setFilterParamaters(minMaxPopulation, minMaxGdpPppPc, selectedRegionIds);
+      const selectedRegionIds: string[] = [];
+      const selectedCountryIds: string[] = ["United States of America"];
+      mapContext.setFilterParamaters(minMaxPopulation, minMaxGdpPppPc, selectedRegionIds, selectedCountryIds);
     }
   }
 
